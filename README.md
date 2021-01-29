@@ -21,3 +21,4 @@ A modified contract of Synthetix liquidity mining reward contract </br>
 [A tokenized derivative](https://medium.com/hakkafinance/igain-introduction-29da2834500f) of AMM impermanent loss
 * [SheetyDApp](http://igain.hakka.finance/)
 * [Wiki](https://hakkafinance.gitbook.io/igain/)
+* [iGain formula](https://hackmd.io/pbF87K5OSwibyiOwjrmvcg)
