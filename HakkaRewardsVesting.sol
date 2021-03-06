@@ -632,7 +632,7 @@ contract HakkaRewardsVesting is LPTokenWrapper, IRewardDistributionRecipient {
     }
 
     function getReward() public updateReward(msg.sender) {
-        uint256 reward = earned(msg.sender);
+        uint256 reward = rewards[msg.sender];
         if (reward > 0) {
             rewards[msg.sender] = 0;
             vault.deposit(msg.sender, reward);
@@ -652,6 +652,7 @@ contract HakkaRewardsVesting is LPTokenWrapper, IRewardDistributionRecipient {
             uint256 leftover = remaining.mul(rewardRate);
             rewardRate = reward.add(leftover).div(DURATION);
         }
+        require(rewardRate < 1e36, "Too much reward"); //token per second < 1e18
         lastUpdateTime = block.timestamp;
         periodFinish = block.timestamp.add(DURATION);
         emit RewardAdded(reward);
