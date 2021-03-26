@@ -304,9 +304,9 @@ contract ImpermanentGain is ERC20Mintable {
         uint256 _fee;
         if(time > closeTime) _fee = maxFee;
         else {
-            _fee = closeTime.sub(time).mul(minFee).add(
-                time.sub(openTime).mul(maxFee)
-            ).div(closeTime.sub(openTime));
+            _fee = minFee.add(
+                time.sub(openTime).mul((maxFee.sub(minFee))).div(closeTime.sub(openTime))
+            );
         }
         return (1e18).sub(_fee);
     }
@@ -413,7 +413,7 @@ contract ImpermanentGain is ERC20Mintable {
     function burnLP(uint256 lp, uint256 min_amount) external returns (uint256 amount) {
         require(canBuy, "cannot buy");
         uint256 s = poolA.add(poolB);
-        amount = poolA.mul(poolB).mul(4).mul(fee()).mul(lp).div(1e18).div(_totalSupply);
+        amount = poolA.mul(poolB).mul(4).mul(fee().mul(lp).div(1e18)).div(_totalSupply);
         amount = amount.mul((2e18).sub(lp.mul(fee()).div(_totalSupply))).div(1e18);
         amount = s.mul(s).sub(amount).sqrt();
         amount = s.sub(amount).div(2);
