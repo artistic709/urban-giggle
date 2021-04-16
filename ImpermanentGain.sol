@@ -292,9 +292,9 @@ contract ImpermanentGain is ERC20Mintable {
 
     // calculate how many of a needs to be swapped for b when burning a
     function burnPartialHelper(uint256 amountIn, uint256 reserveIn, uint256 reserveOut, uint256 f) internal pure returns (uint256 x) {
+        uint256 r = amountIn.mul(4).mul(reserveIn).mul(f).div(1e18); //prevent stack too deep
         x = reserveOut.sub(amountIn).mul(f).div(1e18).add(reserveIn); // (reserveOut - a) * fee + reserveIn
-        x = x.mul(x).add(amountIn.mul(4).mul(reserveIn).mul(f).div(1e18)).sqrt();
-        x = x.add(amountIn.mul(f).div(1e18)).sub(reserveOut.mul(f).div(1e18)).sub(reserveIn);
+        x = x.mul(x).add(r).sqrt().sub(x);
         x = x.mul(1e18).div(f).div(2);
     }
 
@@ -397,7 +397,7 @@ contract ImpermanentGain is ERC20Mintable {
         uint256 k = poolA.mul(poolB).sqrt();
         uint256 _k = poolA.add(amount).mul(poolB.add(amount)).sqrt();
 
-        // ( sqrt(_k/k) - 1 ) * LP
+        // ( sqrt(_k)/sqrt(k) - 1 ) * LP
         _lp = _k.mul(1e18).div(k).sub(1e18).mul(_totalSupply).div(1e18);
         _lp = _lp.mul(fee()).div(1e18); //fee
 
@@ -413,8 +413,10 @@ contract ImpermanentGain is ERC20Mintable {
     function burnLP(uint256 lp, uint256 min_amount) external returns (uint256 amount) {
         require(canBuy, "cannot buy");
         uint256 s = poolA.add(poolB);
-        amount = poolA.mul(poolB).mul(4).mul(fee().mul(lp).div(1e18)).div(_totalSupply);
-        amount = amount.mul((2e18).sub(lp.mul(fee()).div(_totalSupply))).div(1e18);
+
+        uint256 f = fee().mul(lp).div(_totalSupply);
+        amount = poolA.mul(poolB).mul(4).mul(f).div(1e18);
+        amount = amount.mul((2e18).sub(f)).div(1e18);
         amount = s.mul(s).sub(amount).sqrt();
         amount = s.sub(amount).div(2);
         require(amount >= min_amount, "SLIPPAGE_DETECTED");
@@ -463,7 +465,7 @@ contract ImpermanentGain is ERC20Mintable {
         uint256 k = poolA.mul(poolB).sqrt();
         uint256 _k = poolA.add(_a).mul(poolB.add(_b)).sqrt();
 
-        // ( sqrt(_k/k) - 1 ) * LP
+        // ( sqrt(_k)/sqrt(k) - 1 ) * LP
         _lp = _k.mul(1e18).div(k).sub(1e18).mul(_totalSupply).div(1e18);
         _lp = _lp.mul(fee()).div(1e18); //fee
 
@@ -482,7 +484,7 @@ contract ImpermanentGain is ERC20Mintable {
         uint256 k = poolA.mul(poolB).sqrt();
         uint256 _k = poolA.sub(_a).mul(poolB.sub(_b)).sqrt();
 
-        // ( 1 - sqrt(_k/k) ) * LP
+        // ( 1 - sqrt(_k)/sqrt(k) ) * LP
         _lp = (1e18).sub(_k.mul(1e18).div(k)).mul(_totalSupply).div(1e18);
         _lp = _lp.mul(1e18).div(fee()); //fee
 
